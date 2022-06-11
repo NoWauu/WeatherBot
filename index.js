@@ -7,6 +7,14 @@ const path = require("node:path");
 const client  = new Client({ intents: [Intents.FLAGS.GUILDS] });
 
 client.commands = new Collection();
+const commandsPath = path.join(__dirname, 'commands');
+const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
+
+for(const file of commandFiles){
+  const filePath = path.join(commandsPath, file);
+  const command = require(filePath);
+  client.commands.set(command.data.name, command);
+}
 
 client.once('ready', () => {
   console.log('Ready!');
@@ -15,16 +23,15 @@ client.once('ready', () => {
 client.on('interactionCreate', async interaction => {
   if (!interaction.isCommand()) return;
 
-  const { commandName } = interaction;
+  const command = client.commands.get(interaction.commandName);
 
-  if (commandName === 'ping') {
-    await interaction.reply('Pong!');
-  } else if (commandName === 'server') {
-    await interaction.reply(`Server : ${interaction.guild.name}, ID : ${interaction.guild.id}`);
-  } else if (commandName === 'user') {
-    await interaction.reply(`User : ${interaction.user.tag}, ID : ${interaction.user.id}`);
-  } else if (!interaction.replied) {
-    await interaction.reply('Unknown command.');
+  if(!command) return;
+
+  try {
+    await command.execute(interaction);
+  } catch (error) {
+    console.error(error);
+    await interaction.reply({ content: 'There was an error executing this command'});
   }
 });
 
