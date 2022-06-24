@@ -1,4 +1,5 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
+const { MessageEmbed } = require("discord.js");
 const fetch = require('node-fetch');
 
 async function getJSONResponse(body) {
@@ -30,6 +31,7 @@ module.exports = {
     let settings = { method: "GET" };
 
     let response = "";
+    let responseEmbed = new MessageEmbed()
 
     await fetch(url, settings)
       .then(res => res.json())
@@ -39,13 +41,25 @@ module.exports = {
         let country = data["location"].country;
         let region = data["location"].region;
         let city = data["location"].name;
+        let weatherIcon = `https:${data["current"]["condition"].icon}`;
+        let weatherText = data["current"]["condition"].text.toString();
+        let humid = data["current"].humidity;
+        let tempC = data["current"].temp_c;
+        let tempF = data['current'].temp_f;
+        const date = new Date();
 
-        response += `Weather in ${city}, ${region}, ${country} : `
-        response += data["current"]["condition"].text;
+          responseEmbed.setTitle(`Weather of ${date.getDate()}/${date.getMonth()+1}/${date.getFullYear()}`)
+          .setAuthor({ name:"made by NoWay_y", iconURL: "https://i.imgur.com/a3R7UJw.png", url:"https://localhost"})
+          .setDescription(`${city}, in ${country}`)
+          .setThumbnail(weatherIcon)
+
+          .addField("Status", weatherText.toString(), true)
+          .addField("Temperature", `${tempC}°C/${tempF}°F`, true)
+          .addField("Humidity", `${humid}%`, true)
 
       });
 
-    interaction.reply(response);
+    interaction.reply({ embeds: [responseEmbed] });
 
   }
 }
