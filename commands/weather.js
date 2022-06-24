@@ -1,6 +1,7 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { MessageEmbed } = require("discord.js");
 const fetch = require('node-fetch');
+// const { Compass } = require('compass.js');
 
 async function getJSONResponse(body) {
   let fullBody = '';
@@ -38,25 +39,29 @@ module.exports = {
       .then(async data => {
         console.log(data);
 
-        let country = data["location"].country;
-        let region = data["location"].region;
-        let city = data["location"].name;
-        let weatherIcon = `https:${data["current"]["condition"].icon}`;
-        let weatherText = data["current"]["condition"].text.toString();
-        let humid = data["current"].humidity;
-        let tempC = data["current"].temp_c;
-        let tempF = data['current'].temp_f;
+        const location = data["location"];
+        const current = data["current"];
+
+        let country = location.country;
+        let region = location.region;
+        let city = location.name;
+        let weatherIcon = `https:${current["condition"].icon}`;
+        let weatherText = current["condition"].text;
+        let humid = current.humidity;
+        let tempC = current.temp_c;
+        let tempF = current.temp_f;
         const date = new Date();
 
-          responseEmbed.setTitle(`Weather of ${date.getDate()}/${date.getMonth()+1}/${date.getFullYear()}`)
-          .setAuthor({ name:"made by NoWay_y", iconURL: "https://i.imgur.com/a3R7UJw.png", url:"https://localhost"})
+        responseEmbed.setTitle(`Weather of ${date.getDate()}/${date.getMonth()+1}/${date.getFullYear()}`)
           .setDescription(`${city}, in ${country}`)
           .setThumbnail(weatherIcon)
 
-          .addField("Status", weatherText.toString(), true)
+
+          .addField("Status", `${weatherText}`,true)
           .addField("Temperature", `${tempC}°C/${tempF}°F`, true)
           .addField("Humidity", `${humid}%`, true)
 
+          .setFooter({text: "Made by NoWay_y#4921", iconURL: "https://i.imgur.com/a3R7UJw.png"})
       });
 
     interaction.reply({ embeds: [responseEmbed] });
